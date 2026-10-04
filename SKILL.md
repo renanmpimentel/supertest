@@ -129,7 +129,7 @@ Ambiguous contract: establish authority before choosing expectations; implementa
 
 Failing/unstable baseline: investigate isolation and cause; rerun before interpreting analyses.
 
-Missing tool: confirm support and arrange authorized installation. Incompatible: record version/backend and alternatives; avoid framework migration just for a report.
+Missing tool: verify support; try Docker with a reachable daemon and the project's test runtime before proposing host installation, within existing authorization. Report concrete blockers. Incompatible: record version/backend and alternatives; avoid framework migration.
 
 Empty collection: check discovery, filters, and configuration. Zero candidates do not imply zero collected tests or prove effectiveness.
 

@@ -1,8 +1,8 @@
 # Select and configure tools
 
-Read for tool selection/configuration. Prefer adopted tools; verify language, framework, and versions using local configuration, installed `--help`, and official documentation.
+Prefer adopted tools; verify compatibility/options through configuration, installed `--help`, and official documentation.
 
-| Stack | Candidates subject to compatibility |
+| Stack | Candidates |
 | --- | --- |
 | JS/TS | [StrykerJS](https://stryker-mutator.io/docs/stryker-js/introduction/) |
 | PHP | [Infection](https://infection.github.io/guide/) |
@@ -11,6 +11,8 @@ Read for tool selection/configuration. Prefer adopted tools; verify language, fr
 | Python | mutmut or Cosmic Ray |
 | C/C++ | [Mull](https://mull.readthedocs.io/) |
 
-For [Necessist](https://github.com/trailofbits/necessist), confirm backend/version; sample before expanding. Preserve native categories/reports and state score denominators. Timeouts are not assertion kills; zero candidates do not prove effectiveness.
+Confirm [Necessist](https://github.com/trailofbits/necessist) backend/version; sample first. Preserve native categories/reports and score denominators. Timeouts are not assertion kills; zero candidates prove nothing.
 
-`necessist --dump` queries stored results; historical queries are not fresh execution. Check available options; invalidate database/cache when revision/configuration changes. Do not assume JSON export or exit-code gates.
+Missing locally: verify Docker daemon access; use compatible tool/test-runtime images with OS dependencies; record versions/digests. Mount the isolated copy writable, install compatible dependencies, configure test services, and verify its baseline. Restore files; retain results; clean up owned resources.
+
+`necessist --dump` reads history, not fresh execution. Check options; invalidate database/cache after revision/configuration changes. Never assume JSON export or exit-code gates.

@@ -21,7 +21,9 @@ With an agent that supports skills, download or clone this repository and place 
 
 If your environment does not load skills, provide `SKILL.md` as context and make its linked references available when requested. Ask the model to follow the Supertest workflow using the prompts below.
 
-For a full audit, the agent needs access to the target project's source, contracts, test runner, and verification commands. It checks write access, required services, and connection settings before execution. Mutation tools are installed and configured separately for the target stack. Without command execution, the result is a limited manual review.
+For a full audit, the agent needs access to the target project's source, contracts, test runner, and verification commands. It checks write access, required services, and connection settings before execution.
+
+Mutation tools require a compatible version and environment for the target stack. If a tool is absent locally, Supertest checks Docker and daemon access before proposing host installation. Within existing execution authorization, it can prepare a disposable container containing the tool and the project's test runtime; Rust need not be installed on the host. Tests establish their baseline inside that environment, using isolated sources and test services. The report records concrete blockers if this route cannot run. Without command execution, the result is a limited manual review.
 
 ## Use it
 
