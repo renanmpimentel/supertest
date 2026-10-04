@@ -1,51 +1,69 @@
 ---
 name: supertest
-description: Use when auditing or improving existing unit and integration tests, investigating tests that pass without observing outcomes, or analyzing application mutations and Necessist findings.
+description: Use when creating, changing, running, or auditing unit and integration tests, investigating tests that pass without observing outcomes, or analyzing application mutations and Necessist findings.
 ---
 
 # Supertest
 
-## Overview and when to use
+## Overview
 
-Audit existing tests against contracts. Deliver corrections, demonstrated regressions, and classified findings with evidence and limitations.
+Protect contracts through tests; report evidence and limitations.
 
 ## Core rule
 
-**Approve a test's effectiveness only after observing it detect the expected defect.** A green suite establishes the baseline, not effectiveness.
+**Approve effectiveness only after observing detection of the expected defect.** Green establishes baseline, not effectiveness.
 
-Introduce temporary regressions in an isolated copy containing relevant local changes; restore correct behavior afterward. Preserve correct legacy code: this TDD adaptation requires neither deleting nor rewriting it. Compilation or environment failures do not prove defect detection.
+Use temporary regressions in an isolated copy containing relevant local changes; restore afterward. Preserve correct legacy code; never delete or rewrite it for this proof. Collection, import, compilation, or environment errors do not prove detection.
+
+## Scope routing
+
+Load before test work; honor scope:
+
+- **Run only:** execute the requested suite; report command, collection, passed/failed/skipped counts and limitations. Do not audit, mutate, or modify.
+- **Create/change tests:** follow focused guidance below, without automatically expanding into mutation/Necessist audits.
+- **Full audit:** follow the entire audit cycle and completion checklist.
+
+Baseline, regression, restoration, and final runs remain one invocation; they do not retrigger Supertest.
+
+## Create or change tests
+
+Establish an authoritative contract before deriving independent expectations. Cover required boundaries/errors and observable integration effects; consult [good tests](references/good-tests.md).
+
+For existing correct behavior, pass first; prove expected assertion failure with an isolated temporary regression, restore, and pass. For missing new behavior, prove expected assertion failure before authorized implementation, then verify the same contract test passes. Setup errors are not proof.
+
+Run affected verification and required project checks; report changes, commands/counts, failure/restoration evidence, limitations, pending work. Failed checks remain pending; prevent completion.
 
 ## Audit cycle
 
 ### 1. Discover and run
 
-Read instructions, contracts, diff, stack, and commands. Include unchanged tests protecting the scope. Verify write access, required services, and all test connection settings before execution.
+Read instructions, contracts, diff, stack, and commands; include unchanged protective tests. Verify write access, services, and all test connection settings before execution.
 
-Run the relevant suite; record command, scope, and collected, passed, failed, and skipped counts. Require a verified, stable baseline with actual collection before interpreting tools.
+Record suite command, scope, collected/passed/failed/skipped counts. Require a verified, stable baseline with actual collection before interpreting tools.
 
 ### 2. Audit unit tests
 
-Check rules, boundaries, invalid inputs, errors, and observable outcomes. Derive expectations from contracts without copying the algorithm. Avoid tautologies and mocking core behavior; replace necessary boundaries. Consult [good tests](references/good-tests.md) when evaluating expectations, mocks, and helpers.
+Check rules, boundaries, invalid inputs, errors, and outcomes. Derive contractual expectations without copying algorithms. Avoid tautologies and core mocks; replace necessary boundaries. Consult [good tests](references/good-tests.md).
 
-Await promises and prove callbacks execute: assertions inside an uncalled callback protect nothing.
+Await promises; prove callbacks execute. Uncalled assertions protect nothing.
 
 ### 3. Audit integration tests
 
-Exercise real communication, persistence, transactions, and required effects. HTTP 201 alone does not prove a write.
+Exercise real communication, persistence, transactions, and effects. HTTP 201 does not prove a write.
 
-Use isolated data and services, deterministic setup, and cleanup even after failures. Check order independence.
+Isolate data/services, make setup deterministic, clean up after failures, and check order independence.
 
 ### 4. Evaluate effectiveness
 
-Run application mutation testing and Necessist when compatible. Consult [tools](references/tools.md) for selection and configuration.
+Run compatible application mutation testing and Necessist; consult [tools](references/tools.md).
 
-In the isolated copy, run tools sequentially on the same files, restoring state between analyses. Record versions, commands, scope, collected tests, candidates, and reports. Reproduce survivors and `passed` candidates; classify findings and limitations. Never present manual review as execution.
+Run tools sequentially on the same isolated files; restore between analyses. Record versions, commands, scope, collected tests, candidates, reports. Reproduce survivors and `passed` candidates; classify findings/limitations. Manual review is not execution.
 
 ### 5. Correct and verify
 
-Apply the smallest permanent test correction to the original project by default. In the isolated copy, show it failing on the expected regression and passing after restoration. For Necessist defects, repeat the relevant removal.
+Apply minimal permanent test corrections to the original project by default. Show expected regression failure and restored passage in isolation. Repeat relevant removals for Necessist defects.
 
-Rerun affected analyses and the original project's required lint, typecheck, and tests; justify inapplicable checks. Consult [CI](references/pipeline.md) only when requested. Report corrections, evidence, and outstanding work.
+Rerun affected analyses and the original project's required lint, typecheck, tests; justify inapplicability. Consult [CI](references/pipeline.md) only when requested. Report corrections, evidence, outstanding work.
 
 ## Good and weak tests
 
@@ -66,11 +84,11 @@ def test_shipping_boundary():
     assert shipping_cost(101) == 0
 ```
 
-**Gap:** 120 cannot distinguish `>=` from `>`. **Correction:** observe 100 and its neighbors. **Proof:** temporarily replace `>=` with `>`; the weak test passes, the corrected test fails at 100. Restore and both pass. A test without assertions does not observe the return value.
+**Gap:** 120 cannot distinguish `>=` from `>`. **Correction:** observe 100 and neighbors. **Proof:** replace `>=` with `>` temporarily: weak passes, corrected fails at 100. Restore; both pass. No assertions means no return observation.
 
 ### Integration: persistence through an independent connection
 
-Adapt to the real API. The `db_path` fixture prepares an empty table in a disposable SQLite database; `create_order` returns the ID after writing and committing.
+Adapt to the real API. `db_path` prepares an empty table in disposable SQLite; `create_order` writes, commits, and returns the ID.
 
 ```python
 import sqlite3
@@ -88,19 +106,19 @@ def test_order_persisted(db_path):
         assert saved == ("o-1",)
 ```
 
-**Gap:** returning the correct ID does not guarantee persistence. **Correction:** read through an independent connection after commit. **Proof:** omit INSERT or commit while keeping the return; the weak test passes, the corrected test fails on the missing record. Restore and confirm passage. Cache, repository mocks, and the same transaction cannot prove durability.
+**Gap:** ID return does not guarantee persistence. **Correction:** read independently after commit. **Proof:** omit INSERT or commit, retaining return: weak passes, corrected fails on missing record. Restore and pass. Cache, repository mocks, or the same transaction cannot prove durability.
 
 ## Interpret tools
 
 | Result | Decision |
 | --- | --- |
-| Relevant survivor | Tests allow a contract violation; close the gap and demonstrate detection. |
-| Justified equivalent | Identical effects across the valid domain; document proof and domain evidence without artificial tests. |
-| Necessist defect | Both removal and contractual regression pass; correct observation/setup and reproduce both. |
-| Legitimate redundancy | Remaining observations detect the regression despite removal; preserve protection and necessary resource cleanup when simplifying. |
-| Inconclusive | Error, timeout, invalid baseline, empty collection, or unproven cause; investigate without approving effectiveness. |
+| Relevant survivor | Contract violation allowed; close gap and demonstrate detection. |
+| Justified equivalent | Identical effects throughout valid domain; document proof/domain evidence without artificial tests. |
+| Necessist defect | Removal and contractual regression both pass; correct observation/setup and reproduce both. |
+| Legitimate redundancy | Remaining observations detect regression despite removal; preserve protection and necessary cleanup. |
+| Inconclusive | Error, timeout, invalid baseline, empty collection, unproven cause; investigate without approval. |
 
-Accepting equivalence or redundancy resolves that finding, not the entire audit.
+Equivalence/redundancy resolves only that finding.
 
 ## Rationalizations and warning signs
 
@@ -111,28 +129,28 @@ Accepting equivalence or redundancy resolves that finding, not the entire audit.
 | "The tool exited zero." | Check collection, categories, and reproduced findings. |
 | "Reading tests equals execution." | Identify manual review and unexecuted analyses. |
 
-Stop when metrics replace evidence, every removal becomes a defect, or correct legacy code must be rewritten.
+Stop for metrics replacing evidence, every removal labeled defective, or rewriting correct legacy code.
 
-## Completion checklist
+## Full-audit completion checklist
 
 - [ ] Verified, stable baseline with collected tests.
 - [ ] Relevant contracts observed, including integration effects.
 - [ ] Regressions demonstrated and correct behavior restored.
-- [ ] Permanent corrections applied to the original; otherwise patch application explicitly pending.
+- [ ] Corrections applied to original; otherwise patch application explicitly pending.
 - [ ] Findings classified with rationale; missing analyses identified.
 - [ ] Final checks executed or inapplicability justified.
-- [ ] Report distinguishes execution, manual review, and outstanding work; does not promise freedom from bugs.
+- [ ] Report distinguishes execution, manual review, outstanding work; does not promise freedom from bugs.
 
 ## When blocked
 
-Ambiguous contract: establish authority before choosing expectations; implementation cannot settle ambiguity.
+Ambiguous contract: establish authority; implementation cannot settle ambiguity.
 
-Failing/unstable baseline: investigate isolation and cause; rerun before interpreting analyses.
+Failing/unstable baseline: investigate isolation/cause; rerun before interpretation.
 
-Missing tool: verify support; try Docker with a reachable daemon and the project's test runtime before proposing host installation, within existing authorization. Report concrete blockers. Incompatible: record version/backend and alternatives; avoid framework migration.
+Missing tool: verify support; try Docker with reachable daemon and project test runtime before host installation proposals, within existing authorization. Report concrete blockers. Incompatible: record version/backend, alternatives; avoid framework migration.
 
-Empty collection: check discovery, filters, and configuration. Zero candidates do not imply zero collected tests or prove effectiveness.
+Empty collection: check discovery, filters, configuration. Zero candidates imply neither zero tests nor effectiveness.
 
-Read-only original: deliver a verified patch and mark application pending; do not claim corrections applied or the task complete.
+Read-only original: deliver verified patch; mark application pending, never corrections applied or task complete.
 
 Without execution, report limited manual review. Required but unexecuted tools prevent full approval.
