@@ -5,65 +5,62 @@ description: Use when creating, changing, running, or auditing unit and integrat
 
 # Supertest
 
-## Overview
-
-Protect contracts through tests; report evidence and limitations.
-
 ## Core rule
 
-**Approve effectiveness only after observing detection of the expected defect.** Green establishes baseline, not effectiveness.
+**Approve effectiveness only after observing detection of the expected defect.** Green establishes baseline.
 
-Use temporary regressions in an isolated copy containing relevant local changes; restore afterward. Preserve correct legacy code; never delete or rewrite it for this proof. Collection, import, compilation, or environment errors do not prove detection.
+Use temporary regressions in an isolated copy containing relevant local changes; restore and pass. Preserve correct legacy code. Collection/import/compilation/environment errors never prove detection.
 
 ## Scope routing
 
 Load before test work; honor scope:
 
 - **Run only:** execute the requested suite; report command, collection, passed/failed/skipped counts and limitations. Do not audit, mutate, or modify.
-- **Create/change tests:** follow focused guidance below, without automatically expanding into mutation/Necessist audits.
-- **Full audit:** follow the entire audit cycle and completion checklist.
+- **Create/change tests:** follow focused guidance; no automatic mutation/Necessist audit.
+- **Audit:** default to progressive scope and evidence below.
+- **Full audit:** retain the entire requested scope, audit cycle, compatible mutation/Necessist analyses, and completion checklist.
 
-Baseline, regression, restoration, and final runs remain one invocation; they do not retrigger Supertest.
+Internal baseline, regression, restoration, and final runs remain one invocation; never retrigger Supertest.
 
 ## Create or change tests
 
-Establish an authoritative contract before deriving independent expectations. Cover required boundaries/errors and observable integration effects; consult [good tests](references/good-tests.md).
+Establish authoritative contracts and independent expectations; cover boundaries/errors and integration effects. Consult [good tests](references/good-tests.md).
 
-For existing correct behavior, pass first; prove expected assertion failure with an isolated temporary regression, restore, and pass. For missing new behavior, prove expected assertion failure before authorized implementation, then verify the same contract test passes. Setup errors are not proof.
+Existing correct behavior: pass, demonstrate expected assertion failure through isolated regression, restore, pass. Missing behavior: demonstrate expected assertion failure before authorized implementation; verify the same contract test passes afterward.
 
-Run affected verification and required project checks; report changes, commands/counts, failure/restoration evidence, limitations, pending work. Failed checks remain pending; prevent completion.
+Run affected verification and required project checks; report changes, commands/counts, evidence, limitations, pending work. Failed checks remain pending; prevent completion.
 
 ## Audit cycle
 
-### 1. Discover and run
+### 1. Select and establish baseline
 
-Read instructions, contracts, diff, stack, and commands; include unchanged protective tests. Verify write access, services, and all test connection settings before execution.
+Read instructions, contracts, diff, stack, commands. Select changed/requested contracts plus unchanged protective tests/callers. Expand for shared dependencies, integration risk, unexpected failures, or unresolved findings. Unreliable mapping requires at least module scope. Explicit full audits retain all requested scope.
 
-Record suite command, scope, collected/passed/failed/skipped counts. Require a verified, stable baseline with actual collection before interpreting tools.
+Verify write access, services, all test connection settings. Record command, scope, collected/passed/failed/skipped counts; require stable, collected baseline before tool interpretation.
+
+Reuse collected baseline only within this invocation with unchanged command, source/tests, dependencies, configuration, runtime/services. Never transfer baseline across unverified environments. Changes invalidate affected evidence/tool caches.
 
 ### 2. Audit unit tests
 
-Check rules, boundaries, invalid inputs, errors, and outcomes. Derive contractual expectations without copying algorithms. Avoid tautologies and core mocks; replace necessary boundaries. Consult [good tests](references/good-tests.md).
-
-Await promises; prove callbacks execute. Uncalled assertions protect nothing.
+Check rules, boundaries, invalid inputs, errors, outcomes. Derive expectations without copying algorithms; avoid tautologies/core mocks, replace necessary boundaries. Consult [good tests](references/good-tests.md). Await promises; prove callbacks execute.
 
 ### 3. Audit integration tests
 
-Exercise real communication, persistence, transactions, and effects. HTTP 201 does not prove a write.
-
-Isolate data/services, make setup deterministic, clean up after failures, and check order independence.
+Observe real communication, persistence, transactions, effects; HTTP 201 alone cannot prove a write. Isolate data/services; deterministic setup, failure-safe cleanup, order independence.
 
 ### 4. Evaluate effectiveness
 
-Run compatible application mutation testing and Necessist; consult [tools](references/tools.md).
+Progressive audits add tool probes when findings/risk require; demonstrated local detection does not automatically require both tools. Explicit full audits run compatible application mutation testing and Necessist. Consult [tools](references/tools.md).
 
-Run tools sequentially on the same isolated files; restore between analyses. Record versions, commands, scope, collected tests, candidates, reports. Reproduce survivors and `passed` candidates; classify findings/limitations. Manual review is not execution.
+Run sequentially on the same isolated files; restore between analyses. Record versions, commands, scope, collected tests, candidates, reports. Reproduce survivors/`passed` candidates; classify findings/limitations. Manual review is not execution.
 
 ### 5. Correct and verify
 
-Apply minimal permanent test corrections to the original project by default. Show expected regression failure and restored passage in isolation. Repeat relevant removals for Necessist defects.
+Apply minimal permanent test corrections to original by default. Demonstrate regression failure and restored passage in isolation; repeat relevant Necessist removals.
 
-Rerun affected analyses and the original project's required lint, typecheck, tests; justify inapplicability. Consult [CI](references/pipeline.md) only when requested. Report corrections, evidence, outstanding work.
+Iterate with focused checks; repeat whole suites only for risk/project requirements. Rerun previously executed affected analyses and freshly execute original project's required lint, typecheck, tests; never substitute reused evidence. Justify inapplicability. Consult [CI](references/pipeline.md) only when requested.
+
+Report corrections/evidence/pending work, selected/excluded scope, unexecuted analyses, and phase durations (setup, normal tests, mutations, Necessist, final checks) as applicable. Progressive results cannot grant full-audit approval; claim no unmeasured speedup.
 
 ## Good and weak tests
 
@@ -84,11 +81,11 @@ def test_shipping_boundary():
     assert shipping_cost(101) == 0
 ```
 
-**Gap:** 120 cannot distinguish `>=` from `>`. **Correction:** observe 100 and neighbors. **Proof:** replace `>=` with `>` temporarily: weak passes, corrected fails at 100. Restore; both pass. No assertions means no return observation.
+**Gap:** 120 misses `>=` versus `>`. **Correction:** observe 100 and neighbors. **Proof:** temporarily use `>`: weak passes, corrected fails at 100. Restore; both pass. No assertions means no return observation.
 
 ### Integration: persistence through an independent connection
 
-Adapt to the real API. `db_path` prepares an empty table in disposable SQLite; `create_order` writes, commits, and returns the ID.
+Adapt API: `db_path` prepares an empty disposable SQLite table; `create_order` writes, commits, returns ID.
 
 ```python
 import sqlite3
@@ -106,16 +103,16 @@ def test_order_persisted(db_path):
         assert saved == ("o-1",)
 ```
 
-**Gap:** ID return does not guarantee persistence. **Correction:** read independently after commit. **Proof:** omit INSERT or commit, retaining return: weak passes, corrected fails on missing record. Restore and pass. Cache, repository mocks, or the same transaction cannot prove durability.
+**Gap:** ID return cannot prove persistence. **Correction:** read independently after commit. **Proof:** omit INSERT/commit, retain return: weak passes, corrected fails on missing record. Restore and pass. Cache, repository mocks, same transaction cannot prove durability.
 
 ## Interpret tools
 
 | Result | Decision |
 | --- | --- |
-| Relevant survivor | Contract violation allowed; close gap and demonstrate detection. |
-| Justified equivalent | Identical effects throughout valid domain; document proof/domain evidence without artificial tests. |
-| Necessist defect | Removal and contractual regression both pass; correct observation/setup and reproduce both. |
-| Legitimate redundancy | Remaining observations detect regression despite removal; preserve protection and necessary cleanup. |
+| Relevant survivor | Contract violation allowed; correct and demonstrate detection. |
+| Justified equivalent | Identical valid-domain effects; document proof/domain evidence, no artificial tests. |
+| Necessist defect | Removal and contractual regression pass; correct observation/setup, reproduce both. |
+| Legitimate redundancy | Remaining observations detect regression despite removal; preserve protection/necessary cleanup. |
 | Inconclusive | Error, timeout, invalid baseline, empty collection, unproven cause; investigate without approval. |
 
 Equivalence/redundancy resolves only that finding.
@@ -124,33 +121,32 @@ Equivalence/redundancy resolves only that finding.
 
 | Rationalization | Response |
 | --- | --- |
-| "The suite is green." | Demonstrate the expected regression. |
-| "The score is high." | Investigate survivors; avoid universal thresholds and metric-driven exclusions. |
-| "The tool exited zero." | Check collection, categories, and reproduced findings. |
-| "Reading tests equals execution." | Identify manual review and unexecuted analyses. |
+| "Green suite/high score." | Prove regression; investigate survivors, avoid universal thresholds/metric exclusions. |
+| "Zero exit." | Check collection/categories/reproduced findings. |
+| "Reading equals execution." | Disclose manual review/unexecuted analyses. |
 
-Stop for metrics replacing evidence, every removal labeled defective, or rewriting correct legacy code.
+Stop when metrics replace evidence, every removal becomes defective, or correct legacy code is rewritten.
 
 ## Full-audit completion checklist
 
-- [ ] Verified, stable baseline with collected tests.
-- [ ] Relevant contracts observed, including integration effects.
-- [ ] Regressions demonstrated and correct behavior restored.
+- [ ] Verified, stable collected baseline.
+- [ ] Contracts observed, including integration effects.
+- [ ] Regressions demonstrated; correct behavior restored.
 - [ ] Corrections applied to original; otherwise patch application explicitly pending.
 - [ ] Findings classified with rationale; missing analyses identified.
 - [ ] Final checks executed or inapplicability justified.
-- [ ] Report distinguishes execution, manual review, outstanding work; does not promise freedom from bugs.
+- [ ] Report separates execution/manual review/outstanding work; does not promise freedom from bugs.
 
 ## When blocked
 
 Ambiguous contract: establish authority; implementation cannot settle ambiguity.
 
-Failing/unstable baseline: investigate isolation/cause; rerun before interpretation.
+Unstable/failing baseline: investigate isolation/cause; rerun before interpretation.
 
-Missing tool: verify support; try Docker with reachable daemon and project test runtime before host installation proposals, within existing authorization. Report concrete blockers. Incompatible: record version/backend, alternatives; avoid framework migration.
+Missing required tool: verify support; try Docker with reachable daemon and project test runtime before host installation proposals, within authorization. Report blockers. Incompatible: record version/backend/alternatives; avoid framework migration.
 
-Empty collection: check discovery, filters, configuration. Zero candidates imply neither zero tests nor effectiveness.
+Empty collection: check discovery/filters/configuration. Zero candidates imply neither zero tests nor effectiveness.
 
-Read-only original: deliver verified patch; mark application pending, never corrections applied or task complete.
+Read-only original: deliver verified patch; application pending, never applied/complete.
 
-Without execution, report limited manual review. Required but unexecuted tools prevent full approval.
+Without execution, report limited manual review. Required unexecuted tools prevent full approval.
