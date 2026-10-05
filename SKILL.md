@@ -54,6 +54,19 @@ Progressive audits add tool probes when findings/risk require; demonstrated loca
 
 Run sequentially on the same isolated files; restore between analyses. Record versions, commands, scope, collected tests, candidates, reports. Reproduce survivors/`passed` candidates; classify findings/limitations. Manual review is not execution.
 
+Necessist `passed` means the test still passed after that statement was removed: a weakness candidate, never evidence of effectiveness. Triage each candidate in order:
+
+1. **Removed assertion or assertion-helper call** (for example, `assertEqual`): removing an assertion always passes. Classify configuration noise; stop. See [tools](references/tools.md). If its arguments perform an action (for example, `assertNoError(t, tx.Commit())`), continue to step 2.
+2. **Explain why removal passed:** check whether the statement repeats a framework default or other setup; verify any language or framework semantics you rely on with a minimal executed check.
+3. **Name the contract** the removed statement serves; consult the gap patterns in [good tests](references/good-tests.md).
+4. **Execute a contractual regression against the unmodified test:** a temporary production-code change violating that contract. Removal, or removal combined with the regression, proves nothing.
+   - Unmodified test fails: legitimate redundancy; stop.
+   - Unmodified test passes: Necessist defect; correct and reproduce both.
+
+Select or report a finding only from the last outcome; reasoned or conceptual regressions remain unverified candidates.
+
+When candidates exceed the budget, order files and survivors by contract risk and process them in that order until the budget ends: documented, security, validation, and decision-guard contracts first; timing-dependent tests last. Record unsampled files and untriaged survivors.
+
 ### 5. Correct and verify
 
 Apply minimal permanent test corrections to original by default. Demonstrate regression failure and restored passage in isolation; repeat relevant Necessist removals.
@@ -111,7 +124,7 @@ def test_order_persisted(db_path):
 | --- | --- |
 | Relevant survivor | Contract violation allowed; correct and demonstrate detection. |
 | Justified equivalent | Identical valid-domain effects; document proof/domain evidence, no artificial tests. |
-| Necessist defect | Removal and contractual regression pass; correct observation/setup, reproduce both. |
+| Necessist defect | Removal passes, and the unmodified test also passes the contractual regression; correct observation/setup, reproduce both. |
 | Legitimate redundancy | Remaining observations detect regression despite removal; preserve protection/necessary cleanup. |
 | Inconclusive | Error, timeout, invalid baseline, empty collection, unproven cause; investigate without approval. |
 

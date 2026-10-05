@@ -23,6 +23,11 @@ assert normalize(" name ") == "name"
 
 Text, exact values, and interactions can be legitimate contracts. Spies may check contractual arguments, counts, or order.
 
+Negative and security tests hide two common gaps:
+
+- **Masking input:** a test asserting "X is ignored" that always sends the legitimate input cannot detect a fallback to X. Add a case with the legitimate input absent and X present.
+- **Zero-valued fixture:** when the initial value equals what a regression produces (empty string, 0, nil), "unchanged" and "cleared" look identical. Seed a distinguishable value.
+
 Mental mutation selects regressions; it does not replace execution.
 
 Adapted from Jesse Vincent's [Writing Good Tests](https://github.com/obra/superpowers/blob/main/skills/test-driven-development/writing-good-tests.md) (Superpowers; MIT).
