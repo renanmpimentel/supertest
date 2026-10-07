@@ -4,6 +4,18 @@ An agent skill for creating, changing, running, and auditing unit and integratio
 
 A passing suite is a starting point. Supertest asks for evidence that a test detects the specific defect it is meant to catch, then verifies that correct behavior passes again.
 
+**Quick start (Claude Code):**
+
+```bash
+git clone https://github.com/renanmpimentel/supertest ~/.claude/skills/supertest
+```
+
+Then ask: `Load Supertest and audit the tests for <contract> progressively.` You get the gaps found, each proven by a temporary regression the old test missed and the corrected test catches.
+
+## Example finding
+
+A circuit-breaker suite passed 12/12. Its "open circuit returns the fallback" test expected `"Delayed service is down"` — the same string the real service throws. Supertest made the open circuit call the service anyway: still 12/12 green. The corrected test counts calls and gives each failure a distinct message (`Failure #1`, `Failure #2`), so the same regression now fails it. The production code was already correct; the test just could not tell.
+
 ## When to use it
 
 - Create first tests for existing behavior or tests for a new feature.
@@ -14,7 +26,7 @@ A passing suite is a starting point. Supertest asks for evidence that a test det
 - Review tests that pass without observing meaningful outcomes.
 - Find missing boundary cases, circular expectations, or mocks that hide required effects.
 - Verify persistence, transactions, and other integration effects.
-- Investigate application mutation survivors and Necessist findings.
+- Investigate mutation survivors (code changes no test noticed) and [Necessist](https://github.com/trailofbits/necessist) findings (test statements that can be removed while the test still passes).
 
 The skill preserves correct legacy code and focuses corrections on demonstrated gaps.
 
@@ -22,7 +34,7 @@ The skill preserves correct legacy code and focuses corrections on demonstrated 
 
 Supertest uses the open [Agent Skills format](https://agentskills.io/specification).
 
-With an agent that supports skills, download or clone this repository and place the `supertest/` directory in the skills location documented by that agent. Keep `SKILL.md` and `references/` together, along with the README and license. Installation paths, discovery, and invocation syntax depend on the agent.
+With an agent that supports skills, clone this repository into a directory named `supertest` inside that agent's skills location (for Claude Code: `~/.claude/skills/supertest`, or `.claude/skills/supertest` in a project). Keep `SKILL.md` and `references/` together, along with the README and license. Installation paths, discovery, and invocation syntax depend on the agent.
 
 If your environment does not load skills, provide `SKILL.md` as context and make its linked references available when requested. Ask the model to follow Supertest within the requested scope using the prompts below.
 
@@ -55,20 +67,8 @@ Ask your agent to load the skill and honor the requested scope:
 
 ```text
 Load Supertest and create the first unit tests for the existing shipping-cost
-contract. Preserve correct code and demonstrate assertion failure using an
-isolated temporary regression, then restore and pass.
-```
-
-```text
-Load Supertest and create integration tests for the new order-cancellation
-contract. Demonstrate expected assertion failure for missing behavior before
-authorized implementation, then verify the same contract tests pass. Report
-failed final checks as pending; do not claim completion.
-```
-
-```text
-Load Supertest and update the affected tests for the revised shipping contract.
-Verify the boundary cases and report the affected checks.
+contract. Demonstrate assertion failure with an isolated temporary regression,
+then restore and pass.
 ```
 
 ```text
@@ -76,59 +76,27 @@ Load Supertest and run the order integration suite only.
 Report the command, collection, passed/failed/skipped counts, and limitations.
 ```
 
-Progressive audit example:
-
 ```text
 Load Supertest and audit the changed shipping contract progressively.
 Include unchanged protective tests and callers; expand for findings or risks.
-Disclose selected and excluded scope and unexecuted analyses.
-```
-
-Full-audit examples:
-
-```text
-Read SKILL.md and perform a full audit of the existing unit tests for
-shipping costs, including compatible mutation testing and Necessist.
-Verify boundary behavior and demonstrate the regressions each corrected test catches.
 ```
 
 ```text
-Read SKILL.md and perform a full audit of order persistence,
-including compatible mutation testing and Necessist.
-Verify committed data through an independent connection, beyond the response status.
+Read SKILL.md and perform a full audit of order persistence, including
+compatible mutation testing and Necessist. Verify committed data through an
+independent connection, beyond the response status.
 ```
 
-```text
-Read SKILL.md and perform a full audit of the affected module, investigating
-mutation survivors and Necessist findings across the entire requested scope.
-Report reproduced findings and execution limitations.
-```
+Use your agent's native skill invocation when available, and validate discovery and execution in your environment.
 
-Use your agent's native skill invocation when available. Automatic discovery depends on the agent's support for skills. The portable format does not establish compatibility with every host or model; validate discovery and execution in your environment.
+## How it works
 
-## Audit modes and execution evidence
+- **Scope:** run-only, create/change, progressive audit (default: changed contracts plus the tests and callers protecting them, expanding on findings or risk) and explicit full audit (entire scope, mutation testing and Necessist, full checklist).
+- **Evidence:** a stable, collected baseline first; every claimed gap is a temporary regression in an isolated copy that the old test misses and the corrected test catches, then restored. Collection, import and environment errors never count as proof.
+- **Corrections:** smallest permanent test changes in the original project; correct legacy code is preserved. If current code violates the contract, it is reported as a production defect.
+- **Report:** scope, commands, counts, demonstrated regressions, classified findings, unexecuted analyses, phase durations and pending work — separating execution from manual review. High scores, zero exits and zero candidates alone prove nothing.
 
-Ordinary audits default to progressive scope: changed or requested contracts plus unchanged tests and callers that protect them. The agent expands for shared dependencies, integration risks, unexpected failures, or unresolved findings. If mapping is unreliable, it selects at least the module. The agent demonstrates contract regression detection and adds tool probes when findings or risk require them; proving a local defect does not automatically launch both mutation testing and Necessist. Previously executed affected analyses are rerun after changes; unresolved findings or risk can justify new analyses.
-
-An explicit full audit retains the entire requested scope, compatible application mutation testing and Necessist, restoration, corrections, and the full completion checklist. Progressive reports disclose selected and excluded scope and unexecuted analyses; they cannot grant full-audit approval.
-
-A collected baseline can be reused only within the same invocation when the command, source, tests, dependencies, configuration, runtime, and services are unchanged. Evidence from the original project cannot be transferred to an isolated copy or container without verifying that environment. Changes invalidate affected evidence and tool caches. Temporary regressions still require restoration and a passing check afterward.
-
-During correction, the agent uses focused checks rather than repeating the whole suite per finding unless risk or project requirements demand it. Fresh required final lint, typecheck, and tests run in the original project; earlier green results cannot replace this gate. Run-only requests retain their exact requested suite.
-
-The report records durations for setup, normal tests, mutations, Necessist, and final checks as applicable. These measurements support later comparisons; this package makes no measured speedup claim.
-
-## What creation and audits deliver
-
-Creation and changes start from an authoritative contract, cover required boundaries and errors, and observe integration effects. Tests for existing correct behavior demonstrate detection through isolated temporary regressions. For missing new behavior, the agent observes the expected assertion failure before authorized implementation, then verifies that the same contract tests pass. Collection, import, and environment errors do not count as that proof. The agent runs affected verification and required project checks and reports evidence, limitations, and pending work. Failed final checks remain pending and prevent a completion claim. Focused test work does not automatically expand into a full mutation or Necessist audit.
-
-Run-only requests execute the requested suite and report results without auditing, mutating, or modifying tests.
-
-For full audits, the agent discovers and runs a stable baseline, audits unit and integration observations, evaluates compatible tools, and applies the smallest permanent test corrections to the original project. Temporary regressions run in an isolated copy containing relevant local changes, with correct behavior restored afterward.
-
-The report identifies selected and excluded scope, commands, test and candidate counts, corrections, demonstrated regressions, classified findings, unexecuted analyses, phase durations, limitations, and outstanding work. It distinguishes actual execution from manual review and applied corrections from pending patches. If the original is read-only, the agent delivers a verified patch and reports its application as pending.
-
-Tool availability and framework support constrain what can run. High scores, zero exit codes, and zero candidates alone do not establish test effectiveness. Timeouts are reported separately from assertion kills; passing removals do not justify discarding necessary cleanup. Mental mutation guides regression selection; it does not replace execution. CI integration is handled only when requested.
+The full rules live in [SKILL.md](SKILL.md).
 
 ## Package contents
 
