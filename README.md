@@ -4,10 +4,10 @@ An agent skill for creating, changing, running, and auditing unit and integratio
 
 A passing suite is a starting point. Supertest asks for evidence that a test detects the specific defect it is meant to catch, then verifies that correct behavior passes again.
 
-**Quick start (Claude Code):**
+**Quick start:**
 
 ```bash
-git clone https://github.com/renanmpimentel/supertest ~/.claude/skills/supertest
+npx skills add renanmpimentel/supertest
 ```
 
 Then ask: `Load Supertest and audit the tests for <contract> progressively.` You get the gaps found, each proven by a temporary regression the old test missed and the corrected test catches.
@@ -34,17 +34,30 @@ The skill preserves correct legacy code and focuses corrections on demonstrated 
 
 Supertest uses the open [Agent Skills format](https://agentskills.io/specification).
 
-With an agent that supports skills, clone this repository into a directory named `supertest` inside that agent's skills location (for Claude Code: `~/.claude/skills/supertest`, or `.claude/skills/supertest` in a project). Keep `SKILL.md` and `references/` together, along with the README and license. Installation paths, discovery, and invocation syntax depend on the agent.
+**Recommended:** `npx skills add renanmpimentel/supertest` ([skills CLI](https://github.com/vercel-labs/skills), needs Node). It installs for the agents you pick (`-a <agent>`, `'*'` for all), project-level by default or user-level with `-g`, and supports `skills update` / `skills remove`. It symlinks by default (use `--copy` where symlinks are a problem) and sends install telemetry.
 
-If your environment does not load skills, provide `SKILL.md` as context and make its linked references available when requested. Ask the model to follow Supertest within the requested scope using the prompts below.
+**Manual:** clone into a directory named `supertest` in your agent's skills location:
 
-For a full audit, the agent needs access to the target project's source, contracts, test runner, and verification commands. It checks write access, required services, and connection settings before execution.
+| Agent | User-level | Project-level |
+| --- | --- | --- |
+| Claude Code | `~/.claude/skills/supertest` | `.claude/skills/supertest` |
+| Codex (OpenAI) | `~/.codex/skills/supertest` | `.agents/skills/supertest` |
+| Cursor | `~/.cursor/skills/supertest` | `.agents/skills/supertest` |
+| Gemini CLI | `~/.gemini/skills/supertest` | `.agents/skills/supertest` |
+| GitHub Copilot | `~/.copilot/skills/supertest` | `.agents/skills/supertest` |
+| Windsurf | `~/.codeium/windsurf/skills/supertest` | `.windsurf/skills/supertest` |
 
-Mutation tools require a compatible version and environment for the target stack. If a tool required by the selected audit is absent locally, Supertest checks Docker and daemon access before proposing host installation. A progressive audit does not prepare a container merely because an unused tool is absent. Within existing execution authorization, it can prepare a disposable container containing the tool and the project's test runtime; Rust need not be installed on the host. Tests establish their baseline inside that environment, using isolated sources and test services. The report records concrete blockers if this route cannot run. Without command execution, the result is a limited manual review.
+```bash
+git clone https://github.com/renanmpimentel/supertest ~/.claude/skills/supertest
+```
+
+**No skill support** (for example, ChatGPT on the web): provide `SKILL.md` as context, make its `references/` available when requested, and ask the model to follow Supertest within the requested scope.
+
+Execution needs access to the project's source, test runner and verification commands. Missing mutation tools can run in a disposable Docker container instead of being installed on the host (see [tools](references/tools.md)); without command execution, the result is a limited manual review.
 
 ## Configure each target project
 
-Install and load Supertest in the host, then add this rule to each target project's existing canonical agent-instruction file (for example, `AGENTS.md`):
+Add this rule to each target project's agent-instruction file (for example, `AGENTS.md` or `CLAUDE.md`) so the agent loads Supertest for test work:
 
 ```text
 Load the installed Supertest skill before creating, changing, running, or
@@ -57,9 +70,7 @@ Treat internal baseline, regression, restoration, and final verification runs
 as one invocation; do not retrigger the skill for those runs.
 ```
 
-This repository cannot automatically configure every project. Configure the rule in each target project and verify that its host loads the installed skill. Hosts without native skill support can include `SKILL.md` and its references as context alongside the same project rule.
-
-Activation depends on the host's skill selection and project-instruction support. A direct shell-only `npm test` or `pytest` command does not launch an LLM or load Supertest. Actual test-command hooks require a separately configured executor; this package provides the skill and instruction rule.
+Activation still depends on the host's skill support; a plain `npm test` or `pytest` run does not load the skill.
 
 ## Use it
 
