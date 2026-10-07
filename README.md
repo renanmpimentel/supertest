@@ -114,8 +114,8 @@ The full rules live in [SKILL.md](SKILL.md).
 | Resource | Purpose |
 | --- | --- |
 | [Skill instructions](SKILL.md) | Scope routing, creation guidance, progressive/full audits, examples, and completion criteria |
-| [Good tests](references/good-tests.md) | Independent expectations, observable contracts, mocks, spies, and helpers |
-| [Tools](references/tools.md) | Mutation tool candidates and Necessist guidance |
+| [Good tests](references/good-tests.md) | Independent expectations, observable contracts, mocks and spies, plus gap patterns that let regressions pass (masking input, indistinguishable fallback, unreachable branch, self-healing state, available oracle…) |
+| [Tools](references/tools.md) | Mutation tools per stack, Necessist setup and triage, manual regressions for what tools miss, known tool blind spots, Docker fallback |
 | [Optional CI](references/pipeline.md) | CI selection, artifacts, and gate verification |
 
 ## Credits and license
