@@ -36,9 +36,9 @@ Run affected verification and required project checks; report changes, commands/
 
 Read instructions, contracts, diff, stack, commands. Select changed/requested contracts plus unchanged protective tests/callers. Expand for shared dependencies, integration risk, unexpected failures, or unresolved findings. Unreliable mapping requires at least module scope. Explicit full audits retain all requested scope.
 
-Verify write access, services, all test connection settings. Record command, scope, collected/passed/failed/skipped counts; require stable, collected baseline before tool interpretation.
+Match the CI runtime (versions, network); verify write access, services, connections. Record command, scope, collected/passed/failed/skipped counts from the runner's native summary, not wrappers; require stable, collected baseline before tool interpretation.
 
-Reuse collected baseline only within this invocation with unchanged command, source/tests, dependencies, configuration, runtime/services. Never transfer baseline across unverified environments. Changes invalidate affected evidence/tool caches.
+Reuse baseline only within this invocation with unchanged command, source/tests, dependencies, configuration, runtime. Never transfer baseline across unverified environments. Changes invalidate affected evidence/tool caches.
 
 ### 2. Audit unit tests
 
@@ -46,13 +46,13 @@ Check rules, boundaries, invalid inputs, errors, outcomes. Derive expectations w
 
 ### 3. Audit integration tests
 
-Observe real communication, persistence, transactions, effects; HTTP 201 alone cannot prove a write. Isolate data/services; deterministic setup, failure-safe cleanup, order independence.
+Observe real communication, persistence, transactions, effects; HTTP 201 alone cannot prove a write. Isolate data/services; deterministic setup, failure-safe cleanup, order independence (reverse tests sharing module state).
 
 ### 4. Evaluate effectiveness
 
 Progressive audits add tool probes when findings/risk require; demonstrated local detection does not automatically require both tools. Explicit full audits run compatible application mutation testing and Necessist. Consult [tools](references/tools.md).
 
-Run sequentially on the same isolated files; restore between analyses. Record versions, commands, scope, collected tests, candidates, reports. Reproduce survivors/`passed` candidates; classify findings/limitations. Manual review is not execution.
+Run sequentially on the same isolated files; restore between analyses. Record versions, commands, scope, collected tests, candidates. Reproduce survivors/`passed` candidates; classify findings/limitations. Manual review is not execution.
 
 Necessist `passed` means the test still passed after that statement was removed: a weakness candidate, never evidence of effectiveness. Triage each candidate in order:
 
@@ -71,9 +71,11 @@ When candidates exceed the budget, order files and survivors by contract risk an
 
 Apply minimal permanent test corrections to original by default. Demonstrate regression failure and restored passage in isolation; repeat relevant Necessist removals.
 
+Unmodified production code already violating the contract is a production defect, not a test gap: show the contract test failing first, apply the minimal authorized fix, then show the same test passing.
+
 Iterate with focused checks; repeat whole suites only for risk/project requirements. Rerun previously executed affected analyses and freshly execute original project's required lint, typecheck, tests; never substitute reused evidence. Justify inapplicability. Consult [CI](references/pipeline.md) only when requested.
 
-Report corrections/evidence/pending work, selected/excluded scope, unexecuted analyses, and phase durations (setup, normal tests, mutations, Necessist, final checks) as applicable. Progressive results cannot grant full-audit approval; claim no unmeasured speedup.
+Report corrections/evidence/pending work, selected/excluded scope, unexecuted analyses, and phase durations (setup, normal tests, mutations, Necessist, final checks). Progressive results cannot grant full-audit approval; claim no unmeasured speedup.
 
 ## Good and weak tests
 

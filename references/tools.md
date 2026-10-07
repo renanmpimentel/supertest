@@ -12,13 +12,17 @@ Prefer adopted tools; verify compatibility/options through configuration, instal
 | Go | [Gremlins](https://github.com/go-gremlins/gremlins) or go-mutesting |
 | C/C++ | [Mull](https://mull.readthedocs.io/) |
 
-Check each tool's mutator list. Without statement-removal or branch-addition mutators (for example, Gremlins), contracts such as "ignores X" or "does not fall back to X" receive no mutants; hand-write those contractual regressions.
+Check each tool's mutator list. Without statement-removal or branch-addition mutators (for example, Gremlins), contracts such as "ignores X" or "does not fall back to X" receive no mutants; hand-write those contractual regressions. Tools that never change literals or drop conditions (for example, Gremlins) leave documented limits unprobed: for each min/max, hand-write the "limit removed" regression and add a `max+1` (or `min-1`) case.
 
-Confirm [Necessist](https://github.com/trailofbits/necessist) backend/version against the project's runner (`--framework` values in `--help`); sample first. Unsupported runner (for example, mocha or jest): remove the selected tests' statements manually, one at a time, and label results manual; never migrate frameworks.
+Confirm [Necessist](https://github.com/trailofbits/necessist) backend/version against the project's runner (`--framework` values in `--help`); sample first. Unsupported runner (for example, mocha or jest): remove the selected tests' statements manually, one at a time, and label results manual; never migrate frameworks. Skip assertions (`expect`, `assert*`), local assertion closures (for example, `check := func…`), and whole subtest blocks (for example, `t.Run`) before executing; their removal always passes.
 
 Before running Necessist, search the test files for assertion helpers: functions whose body fails the test (for example, calls `t.Fatal`/`t.Error`, `assert`, or `expect`), such as `assertEqual` or `assertNoError`. Put every helper name found under `ignored_functions` (or `ignored_methods`) in `necessist.toml` (`--default-config` creates it) and record the search command. Unlisted helper removals report uninformative `passed` results: removing an assertion always passes.
 
+Tool blind spots: Stryker skips removal of brace-less one-line guards (hand-remove security guards); Gremlins runs only the mutated package's tests (confirm survivors with `go test ./...`); mutmut 3 reruns pytest in-process, so module-level state breaks it (scope with `do_not_mutate`). Batch-classify mutants in documentation strings and HTTP header-name casing as equivalent.
+
 Preserve native categories/reports and score denominators. Timeouts are not assertion kills; zero candidates prove nothing.
+
+Mutation tools leave sandboxes inside the project (for example, `.stryker-tmp`, `mutants.out`) that test runners may collect, running copied tests against unmutated sources. Delete them or keep them outside the project, and recheck the collected count against the baseline before running any regression.
 
 Missing locally: verify Docker daemon access; use compatible tool/test-runtime images with OS dependencies; record versions/digests. Mount the isolated copy writable, install compatible dependencies, configure test services, and verify its baseline. Restore files; retain results; clean up owned resources.
 
