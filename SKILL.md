@@ -56,7 +56,7 @@ Progressive audits add tool probes when findings/risk require; demonstrated loca
 
 **Boundary probes (always, in every audit):** for each comparison against a limit in the audited code (a constant, configuration value or contract number used with `<`, `<=`, `>` or `>=`), run two regressions against the unmodified tests: shift the limit one unit down and one unit up (for example, `fee < MIN` becomes `fee < MIN - 1`, then `fee < MIN + 1`). A shift that gives the same result for every valid input is equivalent; record it and continue. A surviving shift that changes some valid result is a finding: the tests check the limit only exactly at it or far from it. List every surviving shift in the report. Other hand-picked regressions do not replace these probes.
 
-Run sequentially on the same isolated files; restore between analyses. Record versions, commands, scope, collected tests, candidates. Reproduce survivors/`passed` candidates; classify findings/limitations. Manual review is not execution.
+Run analyses one at a time on the same isolated files, restoring them between analyses. Record tool versions, commands, scope, collected tests and candidates. Reproduce every survivor and every Necessist `passed` candidate before classifying it as a finding or a limitation. Reading code is not execution.
 
 Necessist `passed` means the test still passed after that statement was removed: a weakness candidate, never evidence of effectiveness. Triage each candidate in order:
 
@@ -73,11 +73,11 @@ The budget is the number of regressions executed and tool candidates triaged: 30
 
 ### 5. Correct and verify
 
-Apply minimal permanent test corrections to original by default. Demonstrate regression failure and restored passage in isolation; repeat relevant Necessist removals.
+By default, apply the smallest permanent test corrections to the original project. In the isolated copy, show that each corrected test fails under the regression and passes again once the code is restored; repeat the relevant Necessist removals.
 
-Unmodified production code already violating the contract is a production defect, not a test gap: show the contract test failing first, apply the minimal authorized fix, then show the same test passing.
+If the unmodified production code already violates the contract, that is a production defect, not a test gap: show the contract test failing first, apply the smallest authorized fix, then show the same test passing.
 
-Iterate with focused checks; repeat whole suites only for risk/project requirements. Rerun previously executed affected analyses and freshly execute original project's required lint, typecheck, tests; never substitute reused evidence. Justify inapplicability. Consult [CI](references/pipeline.md) only when requested.
+Iterate with focused checks, and rerun whole suites only when risk or project rules require it. Before finishing, rerun the analyses already executed that your changes affect, and freshly run the original project's required lint, typecheck and tests; never substitute reused evidence. If a check does not apply, say why. Consult [CI](references/pipeline.md) only when requested.
 
 Wait for every run you started, including background jobs, to finish before the final report; never end with checks still running.
 
