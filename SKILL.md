@@ -1,6 +1,9 @@
 ---
 name: supertest
 description: Use when creating, changing, running, or auditing unit and integration tests, investigating tests that pass without observing outcomes, or analyzing application mutations and Necessist findings.
+license: MIT
+metadata:
+  version: 0.2.0
 ---
 
 # Supertest
