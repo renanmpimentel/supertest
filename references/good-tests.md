@@ -36,7 +36,7 @@ Other gaps that let regressions pass:
 - **Self-healing state:** later operations can repair a violation (for example, heap polls restoring order). Observe state right after the operation under test.
 - **Ignored subject parameter:** a helper receiving the subject (`b Binding`) but asserting through a fixed implementation (`JSON.Bind`) never tests that subject.
 - **Global-only pollution check:** asserting `{}.x` is clean misses a replaced prototype on the result itself; also check `Object.getPrototypeOf(result)`.
-- **Limit checked only at and far from the bound:** tests at exactly the minimum and far below it cannot tell `fee < MIN` from `fee < MIN - 1`. For every limit, add one case one unit past it on each side that the contract distinguishes (a raw 49 raised to a minimum of 50; a raw 5,001 capped at 5,000).
+- **Limit checked only at and far from the bound:** tests exactly at a limit and far from it cannot tell `value < LIMIT` from `value < LIMIT - 1`. For every limit the contract defines, add a case one unit past it on each side where the contract distinguishes the result.
 - **Available oracle:** when a contract says "matches X" (Fetch, a URL parser), compare against X over a corpus covering each input class.
 
 Mental mutation selects regressions; it does not replace execution.
