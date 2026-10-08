@@ -11,6 +11,8 @@ description: Use when creating, changing, running, or auditing unit and integrat
 
 Use temporary regressions in an isolated copy containing relevant local changes; restore and pass. Preserve correct legacy code. Collection/import/compilation/environment errors never prove detection.
 
+**Isolated copy:** in a git repository, create it with `git worktree add` on a new temporary path, then copy any uncommitted changes the audit depends on; otherwise copy the project into a new directory from `mktemp -d`. To reset, create a fresh copy instead of deleting and recreating one with `rm -rf` (permission rules often block it). Remove your worktree with `git worktree remove` when done. The original project stays untouched until permanent corrections are applied.
+
 ## Scope routing
 
 Load before test work; honor scope:
@@ -67,7 +69,7 @@ Necessist `passed` means the test still passed after that statement was removed:
 
 Select or report a finding only from the last outcome; reasoned or conceptual regressions remain unverified candidates.
 
-When candidates exceed the budget, order files and survivors by contract risk and process them in that order until the budget ends: documented, security, validation, and decision-guard contracts first; timing-dependent tests last. Record unsampled files and untriaged survivors.
+The budget is the number of regressions executed and tool candidates triaged: 30 per progressive audit unless the user sets another; boundary probes count toward it. Explicit full audits have no default budget. When candidates exceed the budget, order files and survivors by contract risk and process them in that order until the budget ends: documented, security, validation, and decision-guard contracts first; timing-dependent tests last. Record unsampled files and untriaged survivors.
 
 ### 5. Correct and verify
 
