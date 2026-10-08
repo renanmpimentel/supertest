@@ -5,6 +5,7 @@
 Changes driven by [supertest-evals](https://github.com/renanmpimentel/supertest-evals), where agents with the skill found subtle gaps more often than without it but rarely the specific one-unit boundary regression.
 
 - **Boundary probes:** every audit shifts each limit comparison one unit down and up against the unmodified tests and reports surviving shifts; new gap pattern "limit checked only at and far from the bound".
+- **Gap-pattern probes:** every audit checks each pattern of the good-tests catalogue against the audited code, runs the regression of every pattern that applies, and keeps probing after the first gap.
 - **Isolated copy:** defined as a `git worktree` or a fresh `mktemp -d` copy, never reset with `rm -rf`.
 - **Budget:** 30 executed regressions and triaged candidates per progressive audit by default.
 - **Background checks:** wait for every started run before the final report.
