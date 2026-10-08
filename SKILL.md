@@ -79,6 +79,8 @@ Unmodified production code already violating the contract is a production defect
 
 Iterate with focused checks; repeat whole suites only for risk/project requirements. Rerun previously executed affected analyses and freshly execute original project's required lint, typecheck, tests; never substitute reused evidence. Justify inapplicability. Consult [CI](references/pipeline.md) only when requested.
 
+Wait for every run you started, including background jobs, to finish before the final report; never end with checks still running.
+
 Report corrections/evidence/pending work, selected/excluded scope, unexecuted analyses, and phase durations (setup, normal tests, mutations, Necessist, final checks). Progressive results cannot grant full-audit approval; claim no unmeasured speedup.
 
 ## Good and weak tests
