@@ -52,6 +52,8 @@ Observe real communication, persistence, transactions, effects; HTTP 201 alone c
 
 Progressive audits add tool probes when findings/risk require; demonstrated local detection does not automatically require both tools. Explicit full audits run compatible application mutation testing and Necessist. Consult [tools](references/tools.md).
 
+**Boundary probes (always, in every audit):** for each comparison against a limit in the audited code (a constant, configuration value or contract number used with `<`, `<=`, `>` or `>=`), run two regressions against the unmodified tests: shift the limit one unit down and one unit up (for example, `fee < MIN` becomes `fee < MIN - 1`, then `fee < MIN + 1`). A shift that gives the same result for every valid input is equivalent; record it and continue. A surviving shift that changes some valid result is a finding: the tests check the limit only exactly at it or far from it. List every surviving shift in the report. Other hand-picked regressions do not replace these probes.
+
 Run sequentially on the same isolated files; restore between analyses. Record versions, commands, scope, collected tests, candidates. Reproduce survivors/`passed` candidates; classify findings/limitations. Manual review is not execution.
 
 Necessist `passed` means the test still passed after that statement was removed: a weakness candidate, never evidence of effectiveness. Triage each candidate in order:
